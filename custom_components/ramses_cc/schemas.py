@@ -67,6 +67,7 @@ from .const import (
     CONF_COMMANDS,
     CONF_DEV_MODE,
     CONF_MESSAGE_EVENTS,
+    CONF_OVERRIDE_HGI_ID,
     CONF_RAMSES_RF,
     CONF_SEND_PACKET,
     CONF_UNKNOWN_CODES,
@@ -110,6 +111,10 @@ SCH_GLOBAL_TRAITS_DICT, SCH_TRAITS = sch_global_traits_dict_factory(
 )
 
 SCH_GATEWAY_CONFIG = SCH_GATEWAY_CONFIG.extend(
+    {
+        vol.Optional(CONF_OVERRIDE_HGI_ID): _SCH_DEVICE_ID,
+    }
+).extend(
     SCH_ENGINE_DICT,
     extra=vol.PREVENT_EXTRA,
 )

@@ -48,6 +48,7 @@ from ramses_tx.schemas import (
 from .const import (
     CONF_ADVANCED_FEATURES,
     CONF_MESSAGE_EVENTS,
+    CONF_OVERRIDE_HGI_ID,
     CONF_RAMSES_RF,
     CONF_SCHEMA,
     CONF_SEND_PACKET,
@@ -370,6 +371,9 @@ class BaseRamsesFlow(FlowHandler):
                 description_placeholders["error_detail"] = err.msg
 
             if not errors:
+                # Check if user entered an override ID
+                if override_id := user_input.get(CONF_OVERRIDE_HGI_ID):
+                    gateway_config[CONF_OVERRIDE_HGI_ID] = override_id
                 self.options[CONF_SCAN_INTERVAL] = user_input[CONF_SCAN_INTERVAL]
                 self.options[CONF_RAMSES_RF] = gateway_config
                 if self._initial_setup:
@@ -403,6 +407,15 @@ class BaseRamsesFlow(FlowHandler):
                 ),
                 cv.positive_int,
             ),
+            vol.Optional(
+                CONF_OVERRIDE_HGI_ID,
+                description={
+                    # Try to pre-fill with existing setting if available
+                    "suggested_value": self.options.get(CONF_RAMSES_RF, {}).get(
+                        CONF_OVERRIDE_HGI_ID
+                    )
+                },
+            ): selector.TextSelector(),
             vol.Optional(
                 CONF_RAMSES_RF,
                 description={"suggested_value": suggested_values.get(CONF_RAMSES_RF)},

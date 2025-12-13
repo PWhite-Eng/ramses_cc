@@ -23,6 +23,7 @@ CONF_RAMSES_RF: Final = "ramses_rf"
 CONF_SCHEMA: Final = "schema"
 CONF_SEND_PACKET: Final = "send_packet"
 CONF_UNKNOWN_CODES: Final = "unknown_codes"
+CONF_OVERRIDE_HGI_ID: Final = "override_hgi_id"
 
 # State
 SZ_CLIENT_STATE: Final = "client_state"
@@ -75,31 +76,37 @@ PRESET_PERMANENT: Final = "permanent"
 
 
 # Volume Flow Rate units, these specific unit are not defined in HA v2024.1
+# NOTE: ': Final' type hints are removed from Enum members below.
+# Enums are inherently immutable/final. Explicitly adding ': Final' causes
+# 'reportInvalidTypeForm' errors in strict type checkers like Pylance/Pyright.
 class UnitOfVolumeFlowRate(StrEnum):
     """Volume flow rate units (defined by integration)."""
 
-    LITERS_PER_MINUTE: Final = "L/min"
-    LITERS_PER_SECOND: Final = "L/s"
+    # : Final removed to fix Pylance 'reportInvalidTypeForm' error
+    LITERS_PER_MINUTE = "L/min"
+    LITERS_PER_SECOND = "L/s"
 
 
 class SystemMode(StrEnum):
     """System modes."""
 
-    AUTO: Final = "auto"
-    AWAY: Final = "away"
-    CUSTOM: Final = "custom"
-    DAY_OFF: Final = "day_off"
-    DAY_OFF_ECO: Final = "day_off_eco"  # set to Eco when DayOff ends
-    ECO_BOOST: Final = "eco_boost"  # Eco, or Boost
-    HEAT_OFF: Final = "heat_off"
-    RESET: Final = "auto_with_reset"
+    # : Final removed to fix Pylance 'reportInvalidTypeForm' error
+    AUTO = "auto"
+    AWAY = "away"
+    CUSTOM = "custom"
+    DAY_OFF = "day_off"
+    DAY_OFF_ECO = "day_off_eco"  # set to Eco when DayOff ends
+    ECO_BOOST = "eco_boost"  # Eco, or Boost
+    HEAT_OFF = "heat_off"
+    RESET = "auto_with_reset"
 
 
 class ZoneMode(StrEnum):
     """Zone modes."""
 
-    SCHEDULE: Final = "follow_schedule"
-    ADVANCED: Final = "advanced_override"  # until the next setpoint
-    PERMANENT: Final = "permanent_override"  # indefinitely
-    COUNTDOWN: Final = "countdown_override"  # for a number of minutes (max 1,215)
-    TEMPORARY: Final = "temporary_override"  # until a given date/time
+    # : Final removed to fix Pylance 'reportInvalidTypeForm' error
+    SCHEDULE = "follow_schedule"
+    ADVANCED = "advanced_override"  # until the next setpoint
+    PERMANENT = "permanent_override"  # indefinitely
+    COUNTDOWN = "countdown_override"  # for a number of minutes (max 1,215)
+    TEMPORARY = "temporary_override"  # until a given date/time

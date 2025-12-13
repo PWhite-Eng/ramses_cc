@@ -34,6 +34,8 @@ from .broker import RamsesBroker
 from .const import (
     CONF_ADVANCED_FEATURES,
     CONF_MESSAGE_EVENTS,
+    CONF_OVERRIDE_HGI_ID,
+    CONF_RAMSES_RF,
     CONF_SEND_PACKET,
     DOMAIN,
     SIGNAL_UPDATE,
@@ -141,6 +143,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Create a ramses_rf (RAMSES_II)-based system."""
 
     _LOGGER.debug("Setting up entry %s...", entry.entry_id)
+
+    # --- START MONKEY PATCH ---
+    # 1. Look for the override ID in options (UI config) or data (YAML import)
+    config_data = entry.options if entry.options else entry.data
+    gateway_config = config_data.get(CONF_RAMSES_RF, {})
+    override_id = gateway_config.get(CONF_OVERRIDE_HGI_ID)
+
+    if override_id:
+        import ramses_tx.address
+
+        # Apply the patch immediately
+        _LOGGER.warning(
+            "MONKEY PATCH: Overriding HGI_DEVICE_ID. Replacing default %s with configured %s",
+            ramses_tx.address.HGI_DEVICE_ID,
+            override_id,
+        )
+
+        # 1. Overwrite the string constant
+        ramses_tx.address.HGI_DEVICE_ID = override_id
+
+        # 2. Overwrite the cached Address object
+        # This is critical because 'command.py' often uses HGI_DEV_ADDR directly
+        ramses_tx.address.HGI_DEV_ADDR = ramses_tx.address.Address(override_id)
+    # --- END MONKEY PATCH ---
 
     # Check if this entry is already set up
     if entry.entry_id in hass.data[DOMAIN]:

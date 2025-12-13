@@ -52,11 +52,13 @@
                 "title": "Gateway-configuratie",
                 "data": {
                     "scan_interval": "Scan-interval",
-                    "ramses_rf": "Geavanceerde instellingen ramses_rf gateway"
+                    "ramses_rf": "Geavanceerde instellingen ramses_rf gateway",
+                    "override_hgi_id": "Overschrijf HGI Apparaat ID"
                 },
                 "data_description": {
                     "scan_interval": "Hoe vaak opvragen (pollen) voor wijzigingen? Advies: waarde tussen 60 en 180 s.",
-                    "ramses_rf": "Voor standaardgebruik niet vereist."
+                    "ramses_rf": "Voor standaardgebruik niet vereist.",
+                    "override_hgi_id": "Dwing de bibliotheek om dit Apparaat ID (bijv. 18:005960) te gebruiken in plaats van de standaard 18:000730. Vereist als uw firmware een ander ID rapporteert."
                 }
             },
             "schema": {
