@@ -11,7 +11,10 @@ from ramses_rf.schemas import SZ_CLASS, SZ_KNOWN_LIST
 from .virtual_rf import (
     HgiFwTypes,  # noqa: F401, pylint: disable=unused-import
     VirtualRf,
+    main,
 )
+
+__all__ = ["HgiFwTypes", "VirtualRf", "main", "rf_factory"]
 
 # patched constants
 # _DBG_DISABLE_IMPERSONATION_ALERTS = True  # # ramses_tx.protocol
@@ -67,7 +70,7 @@ def _get_hgi_id_for_schema(
     return hgi_id, fw_type
 
 
-@patch("ramses_tx.transport.MINIMUM_WRITE_GAP", MINIMUM_WRITE_GAP)
+@patch("ramses_tx.transport.MIN_INTER_WRITE_GAP", MINIMUM_WRITE_GAP)
 async def rf_factory(
     schemas: list[dict[str, Any] | None], start_gwys: bool = True
 ) -> tuple[VirtualRf, list[Gateway]]:
@@ -89,13 +92,16 @@ async def rf_factory(
 
     for idx, schema in enumerate(schemas):
         if schema is None:  # assume no gateway device
-            rf._create_port(idx)
             continue
 
         hgi_id, fw_type = _get_hgi_id_for_schema(schema, idx)
 
-        rf._create_port(idx)
-        rf.set_gateway(rf.ports[idx], hgi_id, fw_type=HgiFwTypes.__members__[fw_type])
+        if isinstance(fw_type, HgiFwTypes):
+            fw_enum = fw_type
+        else:
+            fw_enum = HgiFwTypes.__members__[fw_type]
+
+        rf.set_gateway(rf.ports[idx], hgi_id, fw_type=fw_enum)
 
         with patch("ramses_tx.transport.comports", rf.comports):
             gwy = Gateway(rf.ports[idx], **schema)

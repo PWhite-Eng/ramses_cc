@@ -7,12 +7,16 @@ from ramses_rf.device import Fakeable
 
 
 def ensure_fakeable(dev: Device, make_fake: bool = True) -> None:
-    """If a Device is not Fakeable (i.e. Fakeable, not _faked), make it so."""
+    """Ensure a Device is Fakeable (i.e. has Fakeable mixin).
 
-    class _Fakeable(dev.__class__, Fakeable):  # type: ignore[misc, name-defined]
+    :param dev: The device to ensure is fakeable.
+    :param make_fake: Whether to call _make_fake() on the device.
+    """
+
+    class _Fakeable(dev.__class__, Fakeable):
         pass
 
-    if isinstance(dev, Fakeable | _Fakeable):
+    if isinstance(dev, Fakeable):
         return
 
     dev.__class__ = _Fakeable

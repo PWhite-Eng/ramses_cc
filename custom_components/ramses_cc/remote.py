@@ -152,7 +152,6 @@ class RamsesRemote(RamsesEntity, RemoteEntity):
             :param event_data: The data payload of the event (dict).
             :return: True if the event matches the filter.
             """
-
             codes = ("22F1", "22F3", "22F7")
             return event_data["src"] == self._device.id and event_data["code"] in codes
 

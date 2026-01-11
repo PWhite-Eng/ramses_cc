@@ -147,7 +147,7 @@ class VirtualRfBase:
         if os.name != "posix":
             raise RuntimeError(f"Unsupported OS: {os.name} (requires termios)")
 
-        if 1 > num_ports > MAX_NUM_PORTS:
+        if not (1 <= num_ports <= MAX_NUM_PORTS):
             raise ValueError(f"Port limit exceeded: {num_ports}")
 
         self._port_info_list: dict[_PN, VirtualComPortInfo] = {}
@@ -179,12 +179,12 @@ class VirtualRfBase:
         port_name = os.ttyname(slave_fd)
         self._selector.register(master_fd, EVENT_READ)
 
-        self._master_to_port[master_fd] = port_name
-        self._port_to_master[port_name] = master_fd
-        self._port_to_object[port_name] = open(master_fd, "rb+", buffering=0)  # noqa: SIM115
-        self._port_to_slave_[port_name] = slave_fd
+        self._master_to_port[_FD(master_fd)] = _PN(port_name)
+        self._port_to_master[_PN(port_name)] = _FD(master_fd)
+        self._port_to_object[_PN(port_name)] = open(master_fd, "rb+", buffering=0)  # noqa: SIM115
+        self._port_to_slave_[_PN(port_name)] = _FD(slave_fd)
 
-        self._set_comport_info(port_name, dev_type=dev_type)
+        self._set_comport_info(_PN(port_name), dev_type=dev_type)
 
     def comports(
         self, include_links: bool = False
@@ -373,7 +373,7 @@ class VirtualRf(VirtualRfBase):
         if port_name not in self.ports:
             raise LookupError(f"Port does not exist: {port_name}")
 
-        if [v for k, v in self.gateways.items() if k != port_name and v == device_id]:
+        if device_id in self.gateways and self.gateways[device_id] != port_name:
             raise LookupError(f"Gateway exists on another port: {device_id}")
 
         if fw_type not in HgiFwTypes:
@@ -398,8 +398,8 @@ class VirtualRf(VirtualRfBase):
                 await asyncio.sleep(0.001)
 
         for data in pkts:
-            self._log.append(("/dev/mock", "SENT", data))
-            self._cast_frame_to_all_ports("/dev/mock", data)  # is not echo only
+            self._log.append((_PN("/dev/mock"), "SENT", data))
+            self._cast_frame_to_all_ports(_PN("/dev/mock"), data)  # is not echo only
 
         if timeout:
             await asyncio.wait_for(no_data_left_to_send(), timeout)
@@ -442,6 +442,7 @@ class VirtualRf(VirtualRfBase):
             if gwy is None or gwy.get(FW_TYPE) != HgiFwTypes.EVOFW3:
                 return None  # do not Tx the frame
             self._push_frame_to_dst_port(src_port, frame)
+            return None
 
         if gwy is None:  # TODO: ?should raise: but is probably from test suite
             return frame
@@ -457,7 +458,7 @@ class VirtualRf(VirtualRfBase):
         return frame
 
 
-async def main() -> None:
+async def main() -> None:  # pragma: no cover
     """ "Demonstrate the class functionality."""
 
     num_ports = 3
@@ -465,7 +466,7 @@ async def main() -> None:
     rf = VirtualRf(num_ports)
     print(f"Ports are: {rf.ports}")
 
-    sers: list[Serial] = [serial_for_url(rf.ports[i]) for i in range(num_ports)]  # type: ignore[no-any-unimported]
+    sers: list[Serial] = [serial_for_url(rf.ports[i]) for i in range(num_ports)]
 
     for i in range(num_ports):
         sers[i].write(bytes(f"Hello World {i}! ", "utf-8"))
@@ -477,5 +478,5 @@ async def main() -> None:
     await rf.stop()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     asyncio.run(main())

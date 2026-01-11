@@ -1,4 +1,6 @@
-"""Tests for the ramses_cc tests."""
+"""
+Tests for the ramses_cc tests.
+"""
 
 from __future__ import annotations
 
@@ -18,14 +20,26 @@ from custom_components.ramses_cc import DOMAIN
 
 # NOTE: Doesn't work with YAML?
 def get_fixture_path(filename: str, integration: str | None = None) -> pathlib.Path:
-    """Get path of fixture."""
+    """
+    Get path of fixture.
+
+    :param filename: The name of the fixture file.
+    :param integration: The integration domain, defaults to None.
+    :return: A pathlib.Path object pointing to the fixture.
+    """
     return pathlib.Path(__file__).parent.joinpath("fixtures", filename)
 
 
 def load_yaml_object_fixture(
     filename: str, integration: str | None = None
 ) -> dict[str, Any]:
-    """Load a YAML dict from a fixture."""
+    """
+    Load a YAML dict from a fixture.
+
+    :param filename: The name of the YAML file.
+    :param integration: The integration domain, defaults to None.
+    :return: A dictionary containing the parsed YAML data.
+    """
     return parse_yaml(load_fixture(filename, integration))
 
 
@@ -33,7 +47,12 @@ def load_yaml_object_fixture(
     "pytest_homeassistant_custom_component.common.get_fixture_path", get_fixture_path
 )
 def configuration_fixture(instance: str) -> dict[str, Any]:
-    """Return the configuration for an instance of the integration."""
+    """
+    Return the configuration for an instance of the integration.
+
+    :param instance: The name of the instance folder.
+    :return: A dictionary of the configuration.
+    """
     try:
         return load_yaml_object_fixture(f"{instance}/configuration.yaml", DOMAIN)
     except FileNotFoundError:
@@ -44,7 +63,12 @@ def configuration_fixture(instance: str) -> dict[str, Any]:
     "pytest_homeassistant_custom_component.common.get_fixture_path", get_fixture_path
 )
 def storage_fixture(instance: str) -> JsonObjectType:
-    """Return the storage for an instance of the integration."""
+    """
+    Return the storage for an instance of the integration.
+
+    :param instance: The name of the instance folder.
+    :return: A JsonObjectType containing the storage data.
+    """
     try:
         return load_json_object_fixture(f"{instance}/storage.json", DOMAIN)
     except FileNotFoundError:

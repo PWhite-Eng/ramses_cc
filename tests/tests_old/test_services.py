@@ -250,10 +250,7 @@ async def _cast_packets_to_rf(hass: HomeAssistant, rf: VirtualRf) -> None:
 
     await cast_packets_to_rf(rf, f"{TEST_DIR}/system_1.log", gwy=gwy)
 
-    try:
-        assert len(gwy.devices) == NUM_DEVS_AFTER  # proxy for success of above
-    except AssertionError:
-        assert len(gwy.devices) == NUM_DEVS_AFTER - 4
+    assert len(gwy.devices) in (NUM_DEVS_AFTER, NUM_DEVS_AFTER - 4)
 
     assert len(hass.services.async_services_for_domain(DOMAIN)) == NUM_SVCS_AFTER
     # 2025.10.0: some services registered earlier during async_setup, not in platform
@@ -280,19 +277,19 @@ async def _setup_via_entry_(
     await broker.async_update()
     await hass.async_block_till_done()
 
-    try:
-        assert len(broker._entities) == NUM_ENTS_AFTER  # proxy for success of above
-    except AssertionError:
-        assert (
-            len(broker._entities) == NUM_ENTS_AFTER_ALT  # _setup_via_entry_
-        )  # adjust when adding sensors etc
+    assert len(broker._entities) in (NUM_ENTS_AFTER, NUM_ENTS_AFTER_ALT)
 
     return entry
 
 
 @pytest.fixture()  # need hass fixture to ensure hass/rf use same event loop
 async def entry(hass: HomeAssistant) -> AsyncGenerator[ConfigEntry]:
-    """Set up the test bed."""
+    """
+    Set up the test bed and ensure VirtualRF is stopped after each test.
+
+    :param hass: The Home Assistant instance.
+    :yield: The created ConfigEntry.
+    """
 
     # Utilize a virtual evofw3-compatible gateway
     rf = VirtualRf(2)
@@ -301,15 +298,17 @@ async def entry(hass: HomeAssistant) -> AsyncGenerator[ConfigEntry]:
     with patch(
         "custom_components.ramses_cc.broker._CALL_LATER_DELAY", _CALL_LATER_DELAY
     ):
-        entry: ConfigEntry = None
+        entry: ConfigEntry | None = None
         try:
             entry = await _setup_via_entry_(hass, rf, TEST_CONFIG)
             yield entry
-
         finally:
+            # First, unload the entry to stop the protocol
             if entry:
                 await hass.config_entries.async_unload(entry.entry_id)
-                # await hass.async_block_till_done()
+
+            # Crucial: Always stop the VirtualRF engine to release serial ports
+            # and prevent 'PortTransport' attribute errors in subsequent tests
             await rf.stop()
 
 
