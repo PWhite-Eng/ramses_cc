@@ -469,7 +469,7 @@ class RamsesCoordinator(DataUpdateCoordinator):
         """Discover new devices in the client and register them with HA."""
         gwy: Gateway = self.client
 
-        # --- DIAGNOSTIC LOGGING START ---
+        # --- DIAGNOSTIC LOGGING ---
         # This will reveal if ramses_rf has actually found any devices.
         # If these are 0, ramses_rf is not parsing correctly or is waiting for HGI logic.
         _LOGGER.info(
@@ -477,7 +477,6 @@ class RamsesCoordinator(DataUpdateCoordinator):
         )
         if len(gwy.devices) > 0:
             _LOGGER.debug("Discovered Devices: %s", [d.id for d in gwy.devices])
-        # --- DIAGNOSTIC LOGGING END ---
 
         async def async_add_entities(
             platform: str, devices: list[RamsesRFEntity]
